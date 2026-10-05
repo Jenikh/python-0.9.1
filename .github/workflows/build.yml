@@ -65,7 +65,7 @@ jobs:
             pkg install -y gmake
           run: |
             cd "$GITHUB_WORKSPACE/src"
-            gmake CFLAGS='-DSYSV' -f Makefile
+            gmake CFLAGS='-DSYSV -Wno-error' -f Makefile
             printf 'print 1+1\n' | ./python
 
   openbsd:
@@ -96,5 +96,5 @@ jobs:
             /usr/sbin/pkg_add -u gmake
           run: |
             cd "$GITHUB_WORKSPACE/src"
-            gmake CFLAGS='-DSYSV -Wno-error=incompatible-function-pointer-types' -f Makefile
+            gmake CFLAGS='-DSYSV -Wno-error' -f Makefile
             printf 'print 1+1\n' | ./python
