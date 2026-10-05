@@ -12,9 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Build
-        run: |
-          cd src
-          make -f Makefile
+        run: make -C src -f Makefile
       - name: Smoke test
         run: ./src/python -c 'print 1+1'
       - name: Upload artifact
@@ -38,9 +36,7 @@ jobs:
             mingw-w64-x86_64-make
       - name: Build
         shell: msys2 {0}
-        run: |
-          cd "$GITHUB_WORKSPACE"
-          mingw32-make -f src/Makefile.win32
+        run: mingw32-make -C "$GITHUB_WORKSPACE/src" -f Makefile.win32
       - name: Smoke test
         shell: msys2 {0}
         run: ./src/python.exe -c 'print 1+1'
@@ -52,13 +48,11 @@ jobs:
 
   macos:
     name: macOS
-    runs-on: macos-latest
+    runs-on: macos-13
     steps:
       - uses: actions/checkout@v4
       - name: Build
-        run: |
-          cd src
-          make -f Makefile
+        run: make -C src -f Makefile
       - name: Smoke test
         run: ./src/python -c 'print 1+1'
       - name: Upload artifact
@@ -76,30 +70,39 @@ jobs:
         uses: vmactions/freebsd-vm@v1
         with:
           usesh: true
-          prepare: pkg install -y gmake
+          prepare: |
+            pkg install -y gmake
           run: |
             cd "$GITHUB_WORKSPACE/src"
             gmake -f Makefile
             ./python -c 'print 1+1'
-      - name: Note
-        run: echo "FreeBSD build completed inside the FreeBSD VM."
 
-  unix:
-    name: Other Unix
+  openbsd:
+    name: OpenBSD
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - openbsd
-          - netbsd
     steps:
       - uses: actions/checkout@v4
-      - name: Build in Unix VM
-        uses: vmactions/${{ matrix.os }}-vm@v1
+      - name: Build in OpenBSD VM
+        uses: vmactions/openbsd-vm@v1
+        with:
+          prepare: |
+            pkg_add gmake
+          run: |
+            cd "$GITHUB_WORKSPACE/src"
+            gmake -f Makefile
+            ./python -c 'print 1+1'
+
+  netbsd:
+    name: NetBSD
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build in NetBSD VM
+        uses: vmactions/netbsd-vm@v1
         with:
           usesh: true
-          prepare: pkg_add gmake
+          prepare: |
+            /usr/sbin/pkg_add -u gmake
           run: |
             cd "$GITHUB_WORKSPACE/src"
             gmake -f Makefile
