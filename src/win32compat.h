@@ -5,6 +5,12 @@
 #include <windows.h>
 #include <io.h>
 
+/* Windows headers use these names for unrelated purposes. */
+#undef INCREF
+#undef DECREF
+#undef IN
+#undef IS
+
 #ifndef isatty
 #define isatty _isatty
 #endif
