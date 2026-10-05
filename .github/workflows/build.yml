@@ -26,7 +26,7 @@ jobs:
           path: src/python
 
   windows:
-    name: Windows (MinGW)
+    name: Windows (UCRT64)
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -94,5 +94,5 @@ jobs:
             /usr/sbin/pkg_add -u gmake
           run: |
             cd "$GITHUB_WORKSPACE/src"
-            gmake -f Makefile
-            ./python -c 'print 1+1'
+            gmake CFLAGS='-DSYSV -Wno-error=incompatible-function-pointer-types' -f Makefile
+            printf 'print 1+1\n' | ./python
