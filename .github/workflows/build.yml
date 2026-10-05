@@ -1,13 +1,24 @@
 name: Build Python 0.9.1
 
 on:
-  push:
-  pull_request:
   workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag"
+        required: true
+        default: "v0.9.1"
+      prerelease:
+        description: "Mark the release as a prerelease"
+        required: true
+        type: boolean
+        default: false
 
 concurrency:
-  group: python-0.9.1-build
+  group: python-0.9.1-release
   cancel-in-progress: true
+
+permissions:
+  contents: write
 
 jobs:
   linux:
@@ -98,3 +109,34 @@ jobs:
             cd "$GITHUB_WORKSPACE/src"
             gmake CFLAGS='-DSYSV -Wno-error' -f Makefile
             printf 'print 1+1\n' | ./python
+
+
+  release:
+    name: Create GitHub Release
+    needs: [linux, windows, freebsd, openbsd, netbsd]
+    if: ${{ success() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download release artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release
+
+      - name: Prepare release files
+        run: |
+          mkdir -p release-files
+          cp release/python-0.9.1-linux/python release-files/python-0.9.1-linux
+          cp release/python-0.9.1-windows/python.exe release-files/python-0.9.1-windows.exe
+          cp release/python-0.9.1-freebsd/python release-files/python-0.9.1-freebsd
+          cp release/python-0.9.1-openbsd/python release-files/python-0.9.1-openbsd
+          cp release/python-0.9.1-netbsd/python release-files/python-0.9.1-netbsd
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag }}
+        run: |
+          gh release create "$TAG" release-files/* \
+            --title "Python 0.9.1" \
+            --generate-notes \
+            ${{ inputs.prerelease && '--prerelease' || '' }}
