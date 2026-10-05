@@ -2,6 +2,7 @@
 #ifndef PYTHON091_WIN32COMPAT_H
 #define PYTHON091_WIN32COMPAT_H
 
+#include <windows.h>
 #include <io.h>
 
 #ifndef isatty
