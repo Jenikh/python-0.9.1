@@ -14,7 +14,7 @@ jobs:
       - name: Build
         run: make -C src -f Makefile
       - name: Smoke test
-        run: ./src/python -c 'print 1+1'
+        run: printf 'print 1+1\n' | ./src/python
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -74,8 +74,8 @@ jobs:
             pkg install -y gmake
           run: |
             cd "$GITHUB_WORKSPACE/src"
-            gmake -f Makefile
-            ./python -c 'print 1+1'
+            gmake CFLAGS='-Wno-error=incompatible-function-pointer-types' -f Makefile
+            printf 'print 1+1\n' | ./python
 
   openbsd:
     name: OpenBSD
