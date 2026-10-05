@@ -20,7 +20,7 @@ LDLIBS = -lm
 
 STANDARD_SRC = \
     acceler.c bltinmodule.c ceval.c classobject.c compile.c dictobject.c \
-    errors.c fgetsintr.c fileobject.c frameobject.c funcobject.c \
+    errors.c fgetsintr.c fileobject.c floatobject.c frameobject.c funcobject.c \
     graminit.c grammar1.c import.c intobject.c intrcheck.c listnode.c \
     listobject.c mathmodule.c methodobject.c modsupport.c moduleobject.c \
     node.c object.c parser.c parsetok.c win32module.c regexp.c \
