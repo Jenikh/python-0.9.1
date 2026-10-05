@@ -43,7 +43,9 @@ jobs:
         run: mingw32-make -C "$GITHUB_WORKSPACE/src" -f Makefile.win32
       - name: Smoke test
         shell: msys2 {0}
-        run: printf 'print 1+1\n' | ./src/python.exe
+        run: |
+          export PYTHONPATH="$GITHUB_WORKSPACE/lib"
+          printf 'print 1+1\n' | ./src/python.exe
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -63,7 +65,7 @@ jobs:
             pkg install -y gmake
           run: |
             cd "$GITHUB_WORKSPACE/src"
-            gmake CFLAGS='-DSYSV -Wno-error=incompatible-function-pointer-types' -f Makefile
+            gmake CFLAGS='-DSYSV' -f Makefile
             printf 'print 1+1\n' | ./python
 
   openbsd:
