@@ -1,0 +1,46 @@
+# Build Python 0.9.1 with MinGW on Windows.
+#
+# Requirements:
+#   - MinGW-w64 GCC
+#   - mingw32-make
+#
+# From the repository root:
+#   mingw32-make -f src/Makefile.win32
+#
+# The resulting interpreter is src/python.exe.
+
+CC = gcc
+AR = ar
+RANLIB = ranlib
+
+CFLAGS = -std=gnu89 -O2 -Wall -Wno-implicit-int -Wno-old-style-definition -Wno-unused-parameter -fcommon
+CPPFLAGS = -I. -DWIN32 -DPYTHONPATH=\".;../lib\" -include win32compat.h
+LDFLAGS =
+LDLIBS = -lm
+
+STANDARD_SRC = \
+    acceler.c bltinmodule.c ceval.c classobject.c compile.c dictobject.c \
+    errors.c fgetsintr.c fileobject.c frameobject.c funcobject.c \
+    graminit.c grammar1.c import.c intobject.c intrcheck.c listnode.c \
+    listobject.c mathmodule.c methodobject.c modsupport.c moduleobject.c \
+    node.c object.c parser.c parsetok.c win32module.c regexp.c \
+    regexpmodule.c stringobject.c structmember.c sysmodule.c timemodule.c \
+    tokenizer.c traceback.c tupleobject.c typeobject.c strdup.c
+
+OBJECTS = $(STANDARD_SRC:.c=.o) pythonmain.o config.o
+
+all: python.exe
+
+python.exe: $(OBJECTS)
+	$(CC) $(LDFLAGS) $(OBJECTS) $(LDLIBS) -o $@
+
+config.o: config.c
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
+
+%.o: %.c
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
+
+clean:
+	-del /Q *.o python.exe 2>NUL
+
+.PHONY: all clean
