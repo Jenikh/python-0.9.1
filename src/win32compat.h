@@ -2,7 +2,10 @@
 #ifndef PYTHON091_WIN32COMPAT_H
 #define PYTHON091_WIN32COMPAT_H
 
+/* The old source uses 'byte' as an identifier. */
+#define byte win32_compat_byte
 #include <windows.h>
+#undef byte
 #include <io.h>
 
 /* Windows headers use these names for unrelated purposes. */
