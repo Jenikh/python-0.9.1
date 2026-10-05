@@ -1,0 +1,106 @@
+name: Build Python 0.9.1
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  linux:
+    name: Linux
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: |
+          cd src
+          make -f Makefile
+      - name: Smoke test
+        run: ./src/python -c 'print 1+1'
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-0.9.1-linux
+          path: src/python
+
+  windows:
+    name: Windows (MinGW)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install MinGW
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-make
+      - name: Build
+        shell: msys2 {0}
+        run: |
+          cd "$GITHUB_WORKSPACE"
+          mingw32-make -f src/Makefile.win32
+      - name: Smoke test
+        shell: msys2 {0}
+        run: ./src/python.exe -c 'print 1+1'
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-0.9.1-windows
+          path: src/python.exe
+
+  macos:
+    name: macOS
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: |
+          cd src
+          make -f Makefile
+      - name: Smoke test
+        run: ./src/python -c 'print 1+1'
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-0.9.1-macos
+          path: src/python
+
+  freebsd:
+    name: FreeBSD
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build in FreeBSD VM
+        uses: vmactions/freebsd-vm@v1
+        with:
+          usesh: true
+          prepare: pkg install -y gmake
+          run: |
+            cd "$GITHUB_WORKSPACE/src"
+            gmake -f Makefile
+            ./python -c 'print 1+1'
+      - name: Note
+        run: echo "FreeBSD build completed inside the FreeBSD VM."
+
+  unix:
+    name: Other Unix
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - openbsd
+          - netbsd
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build in Unix VM
+        uses: vmactions/${{ matrix.os }}-vm@v1
+        with:
+          usesh: true
+          prepare: pkg_add gmake
+          run: |
+            cd "$GITHUB_WORKSPACE/src"
+            gmake -f Makefile
+            ./python -c 'print 1+1'
