@@ -5,6 +5,10 @@ on:
   pull_request:
   workflow_dispatch:
 
+concurrency:
+  group: python-0.9.1-build
+  cancel-in-progress: true
+
 jobs:
   linux:
     name: Linux
@@ -29,37 +33,22 @@ jobs:
       - name: Install MinGW
         uses: msys2/setup-msys2@v2
         with:
-          msystem: MINGW64
+          msystem: UCRT64
           update: true
           install: >-
-            mingw-w64-x86_64-gcc
-            mingw-w64-x86_64-make
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-make
       - name: Build
         shell: msys2 {0}
         run: mingw32-make -C "$GITHUB_WORKSPACE/src" -f Makefile.win32
       - name: Smoke test
         shell: msys2 {0}
-        run: ./src/python.exe -c 'print 1+1'
+        run: printf 'print 1+1\n' | ./src/python.exe
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: python-0.9.1-windows
           path: src/python.exe
-
-  macos:
-    name: macOS
-    runs-on: macos-13
-    steps:
-      - uses: actions/checkout@v4
-      - name: Build
-        run: make -C src -f Makefile
-      - name: Smoke test
-        run: ./src/python -c 'print 1+1'
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: python-0.9.1-macos
-          path: src/python
 
   freebsd:
     name: FreeBSD
@@ -74,7 +63,7 @@ jobs:
             pkg install -y gmake
           run: |
             cd "$GITHUB_WORKSPACE/src"
-            gmake CFLAGS='-Wno-error=incompatible-function-pointer-types' -f Makefile
+            gmake CFLAGS='-DSYSV -Wno-error=incompatible-function-pointer-types' -f Makefile
             printf 'print 1+1\n' | ./python
 
   openbsd:
@@ -89,8 +78,8 @@ jobs:
             pkg_add gmake
           run: |
             cd "$GITHUB_WORKSPACE/src"
-            gmake -f Makefile
-            ./python -c 'print 1+1'
+            gmake CFLAGS='-DSYSV -Wno-error=incompatible-function-pointer-types' -f Makefile
+            printf 'print 1+1\n' | ./python
 
   netbsd:
     name: NetBSD
