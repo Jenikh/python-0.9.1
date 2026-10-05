@@ -123,7 +123,7 @@ posix_2str(args, func)
 static object *
 posix_strint(args, func)
 	object *args;
-	int (*func) FPROTO((const char *, int));
+	int (*func) FPROTO((const char *, mode_t));
 {
 	object *path1;
 	int i;
